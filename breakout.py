@@ -90,6 +90,9 @@ def game_loop():
         # --- 碰撞偵測 ---
         if pygame.sprite.collide_rect(ball, paddle):
             ball.speed_y = -ball.speed_y
+        # --- 遊戲結束條件 ---
+        if ball.rect.top > SCREEN_HEIGHT:
+            ball.reset()  # 暫時重置
         # --- 繪圖 ---
         screen.fill(BLACK)
         all_sprites.draw(screen)
