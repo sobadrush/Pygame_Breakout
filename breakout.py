@@ -25,6 +25,18 @@ class Paddle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = (SCREEN_WIDTH - self.rect.width) // 2
         self.rect.y = SCREEN_HEIGHT - self.rect.height - 10
+    
+    def move(self, keys):
+        """ 根據按鍵移動球拍 """
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= 7
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += 7
+        # 防止球拍移出視窗
+        if self.rect.x < 0:
+            self.rect.x = 0
+        if self.rect.x > SCREEN_WIDTH - self.rect.width:
+            self.rect.x = SCREEN_WIDTH - self.rect.width
 
 class Ball(pygame.sprite.Sprite):
     """ 代表遊戲中的球 """
@@ -61,6 +73,8 @@ def game_loop():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+        keys = pygame.key.get_pressed()
+        paddle.move(keys)
         # --- 繪圖 ---
         screen.fill(BLACK)
         all_sprites.draw(screen)
