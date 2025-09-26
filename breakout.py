@@ -51,6 +51,10 @@ def game_loop():
     pygame.display.set_caption("Breakout")
     clock = pygame.time.Clock()
     all_sprites = pygame.sprite.Group()
+    paddle = Paddle()
+    ball = Ball()
+    all_sprites.add(paddle)
+    all_sprites.add(ball)
     running = True
     while running:
         clock.tick(60)
@@ -59,6 +63,7 @@ def game_loop():
                 running = False
         # --- 繪圖 ---
         screen.fill(BLACK)
+        all_sprites.draw(screen)
         pygame.display.flip()
     pygame.quit()
 
