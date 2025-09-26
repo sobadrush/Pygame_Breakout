@@ -15,6 +15,14 @@ WHITE = (255, 255, 255)
 # 球設定
 BALL_RADIUS = 10
 
+# --- 輔助函式 ---
+def draw_text(surface, text, size, x, y):
+    font = pygame.font.Font(None, size)
+    text_surface = font.render(text, True, WHITE)
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surface.blit(text_surface, text_rect)
+
 # --- 類別 ---
 class Paddle(pygame.sprite.Sprite):
     """ 代表玩家控制的球拍 """
@@ -108,32 +116,83 @@ def game_loop():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Breakout")
     clock = pygame.time.Clock()
+    game_state = "start"
+    score = 0
     all_sprites = pygame.sprite.Group()
+    bricks = pygame.sprite.Group()
     paddle = Paddle()
     ball = Ball()
-    all_sprites.add(paddle)
-    all_sprites.add(ball)
+    
+    def create_brick_wall():
+        """ 建立磚塊牆並回傳 bricks sprite group """
+        bricks.empty()
+        all_sprites.empty()
+        all_sprites.add(paddle)
+        all_sprites.add(ball)
+        BRICK_COLORS = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple']
+        for row, color in enumerate(BRICK_COLORS):
+            points = (row + 1) * 10
+            for column in range(SCREEN_WIDTH // (BRICK_NEW_WIDTH + 5)):
+                brick = Brick(
+                    column * (BRICK_NEW_WIDTH + 5) + 10,
+                    row * (BRICK_NEW_HEIGHT + 5) + 50,
+                    color, points
+                )
+                all_sprites.add(brick)
+                bricks.add(brick)
+    
     running = True
     while running:
         clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        # --- 處理輸入 ---
-        keys = pygame.key.get_pressed()
-        paddle.move(keys)
-        # --- 遊戲邏輯更新 ---
-        all_sprites.update()
-        # --- 碰撞偵測 ---
-        if pygame.sprite.collide_rect(ball, paddle):
-            ball.speed_y = -ball.speed_y
-        # --- 遊戲結束條件 ---
-        if ball.rect.top > SCREEN_HEIGHT:
-            ball.reset()  # 暫時重置
-        # --- 繪圖 ---
-        screen.fill(BLACK)
-        all_sprites.draw(screen)
-        pygame.display.flip()
+            if event.type == pygame.KEYDOWN:
+                if game_state == "start":
+                    game_state = "playing"
+                    score = 0
+                    paddle.rect.x = (SCREEN_WIDTH - paddle.rect.width) // 2
+                    ball.reset()
+                    create_brick_wall()
+                elif game_state == "game_over":
+                    game_state = "start"
+        
+        if game_state == "start":
+            screen.fill(BLACK)
+            draw_text(screen, "BREAKOUT", 64, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4)
+            draw_text(screen, "Press any key to start", 22, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+            pygame.display.flip()
+        elif game_state == "playing":
+            # --- 處理輸入 ---
+            keys = pygame.key.get_pressed()
+            paddle.move(keys)
+            # --- 遊戲邏輯更新 ---
+            all_sprites.update()
+            # --- 碰撞偵測 ---
+            if pygame.sprite.collide_rect(ball, paddle):
+                ball.speed_y = -ball.speed_y
+            brick_hit_list = pygame.sprite.spritecollide(ball, bricks, False)
+            if brick_hit_list:
+                ball.speed_y = -ball.speed_y
+                for brick in brick_hit_list:
+                    score += brick.hit()
+            # --- 遊戲結束條件 ---
+            if ball.rect.top > SCREEN_HEIGHT:
+                game_state = "game_over"
+            if not bricks:
+                game_state = "game_over"
+            # --- 繪圖 ---
+            screen.fill(BLACK)
+            all_sprites.draw(screen)
+            draw_text(screen, f"Score: {score}", 24, SCREEN_WIDTH / 2, 10)
+            pygame.display.flip()
+        elif game_state == "game_over":
+            screen.fill(BLACK)
+            draw_text(screen, "GAME OVER", 64, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4)
+            draw_text(screen, f"Final Score: {score}", 30, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+            draw_text(screen, "Press any key to restart", 22, SCREEN_WIDTH / 2, SCREEN_HEIGHT * 3 / 4)
+            pygame.display.flip()
+    
     pygame.quit()
 
 if __name__ == "__main__":
