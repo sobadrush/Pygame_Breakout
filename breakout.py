@@ -73,6 +73,7 @@ def game_loop():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+        # --- 處理輸入 ---
         keys = pygame.key.get_pressed()
         paddle.move(keys)
         # --- 繪圖 ---
