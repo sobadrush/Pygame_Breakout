@@ -50,6 +50,7 @@ def game_loop():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Breakout")
     clock = pygame.time.Clock()
+    all_sprites = pygame.sprite.Group()
     running = True
     while running:
         clock.tick(60)
