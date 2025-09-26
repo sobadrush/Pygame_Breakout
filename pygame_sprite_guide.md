@@ -7,18 +7,30 @@
 ## 主要功能
 
 ### 1. 位置管理
+
+![位置管理說明](images/sprite_position.png)
+
 - `self.rect`：一個 `pygame.Rect` 物件，用於儲存 Sprite 的位置和尺寸
 - 自動追蹤物件的 x、y 座標
 
 ### 2. 圖像渲染
+
+![圖像渲染說明](images/sprite_image.png)
+
 - `self.image`：一個 `pygame.Surface` 物件，用於儲存 Sprite 的視覺表示
 - 支援透明度設定（`set_colorkey`）
 
 ### 3. 碰撞偵測
+
+![碰撞偵測說明](images/sprite_collision.png)
+
 - 支援與其他 Sprite 的矩形碰撞檢查
 - 可以與 Sprite 群組進行批量碰撞偵測
 
 ### 4. 群組管理
+
+![群組管理說明](images/sprite_group.png)
+
 - 可以將多個 Sprite 組織成 `pygame.sprite.Group`
 - 支援批量更新和繪製操作
 
