@@ -55,6 +55,11 @@ class Ball(pygame.sprite.Sprite):
         self.rect.y = SCREEN_HEIGHT // 2
         self.speed_x = random.choice([-4, 4])
         self.speed_y = -4
+    
+    def update(self):
+        """ 移動球 """
+        self.rect.x += self.speed_x
+        self.rect.y += self.speed_y
 
 # --- 遊戲主迴圈 ---
 def game_loop():
@@ -76,6 +81,8 @@ def game_loop():
         # --- 處理輸入 ---
         keys = pygame.key.get_pressed()
         paddle.move(keys)
+        # --- 遊戲邏輯更新 ---
+        all_sprites.update()
         # --- 繪圖 ---
         screen.fill(BLACK)
         all_sprites.draw(screen)
