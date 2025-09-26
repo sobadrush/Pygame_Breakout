@@ -66,6 +66,8 @@ python breakout.py
 - `Ball`：遊戲中的球體
 - `Brick`：可被打破的磚塊
 
+[詳細了解 Pygame Sprite 系統](pygame_sprite_guide.md)
+
 ## 📈 開發歷程
 
 本專案採用逐步開發的方式，每個主要功能都對應一次 Git 提交：
