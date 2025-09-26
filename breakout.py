@@ -65,6 +65,43 @@ class Ball(pygame.sprite.Sprite):
         if self.rect.top <= 0:
             self.speed_y = -self.speed_y
 
+class Brick(pygame.sprite.Sprite):
+    """ 代表一個可以被打掉的磚塊 """
+    def __init__(self, x, y, color, points):
+        super().__init__()
+        self.color = color
+        self.points = points
+        self.image = pygame.Surface([BRICK_NEW_WIDTH, BRICK_NEW_HEIGHT])
+        self.image.fill(self.get_color())
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.health = 2
+    
+    def get_color(self):
+        colors = {
+            'red': (255, 0, 0),
+            'orange': (255, 165, 0),
+            'yellow': (255, 255, 0),
+            'green': (0, 255, 0),
+            'cyan': (0, 255, 255),
+            'blue': (0, 0, 255),
+            'purple': (128, 0, 128)
+        }
+        return colors.get(self.color, WHITE)
+    
+    def hit(self):
+        """ 處理磚塊被擊中的邏輯，並在銷毀時回傳分數 """
+        self.health -= 1
+        if self.health <= 0:
+            self.kill()
+            return self.points
+        else:
+            # 變暗顏色表示受損
+            color = self.get_color()
+            self.image.fill((color[0]//2, color[1]//2, color[2]//2))
+            return 0
+
 # --- 遊戲主迴圈 ---
 def game_loop():
     pygame.init()
