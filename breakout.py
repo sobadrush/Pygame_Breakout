@@ -1,2 +1,16 @@
 import pygame
 import random
+
+# --- 常數 ---
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+# 尺寸建議
+PADDLE_NEW_WIDTH = 110
+PADDLE_NEW_HEIGHT = 22
+BRICK_NEW_WIDTH = 80
+BRICK_NEW_HEIGHT = 25
+# 顏色
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+# 球設定
+BALL_RADIUS = 10
