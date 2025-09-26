@@ -57,9 +57,13 @@ class Ball(pygame.sprite.Sprite):
         self.speed_y = -4
     
     def update(self):
-        """ 移動球 """
+        """ 移動球並處理邊界碰撞 """
         self.rect.x += self.speed_x
         self.rect.y += self.speed_y
+        if self.rect.left <= 0 or self.rect.right >= SCREEN_WIDTH:
+            self.speed_x = -self.speed_x
+        if self.rect.top <= 0:
+            self.speed_y = -self.speed_y
 
 # --- 遊戲主迴圈 ---
 def game_loop():
