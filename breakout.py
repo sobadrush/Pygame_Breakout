@@ -15,6 +15,17 @@ WHITE = (255, 255, 255)
 # 球設定
 BALL_RADIUS = 10
 
+# --- 類別 ---
+class Paddle(pygame.sprite.Sprite):
+    """ 代表玩家控制的球拍 """
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface([PADDLE_NEW_WIDTH, PADDLE_NEW_HEIGHT])
+        self.image.fill(WHITE)
+        self.rect = self.image.get_rect()
+        self.rect.x = (SCREEN_WIDTH - self.rect.width) // 2
+        self.rect.y = SCREEN_HEIGHT - self.rect.height - 10
+
 # --- 遊戲主迴圈 ---
 def game_loop():
     pygame.init()
