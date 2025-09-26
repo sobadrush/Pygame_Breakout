@@ -87,6 +87,9 @@ def game_loop():
         paddle.move(keys)
         # --- 遊戲邏輯更新 ---
         all_sprites.update()
+        # --- 碰撞偵測 ---
+        if pygame.sprite.collide_rect(ball, paddle):
+            ball.speed_y = -ball.speed_y
         # --- 繪圖 ---
         screen.fill(BLACK)
         all_sprites.draw(screen)
