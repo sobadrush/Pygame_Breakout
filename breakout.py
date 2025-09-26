@@ -26,6 +26,24 @@ class Paddle(pygame.sprite.Sprite):
         self.rect.x = (SCREEN_WIDTH - self.rect.width) // 2
         self.rect.y = SCREEN_HEIGHT - self.rect.height - 10
 
+class Ball(pygame.sprite.Sprite):
+    """ 代表遊戲中的球 """
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface([BALL_RADIUS * 2, BALL_RADIUS * 2])
+        self.image.fill(BLACK)
+        self.image.set_colorkey(BLACK)
+        pygame.draw.circle(self.image, WHITE, (BALL_RADIUS, BALL_RADIUS), BALL_RADIUS)
+        self.rect = self.image.get_rect()
+        self.reset()
+    
+    def reset(self):
+        """ 重置球的位置和速度 """
+        self.rect.x = SCREEN_WIDTH // 2
+        self.rect.y = SCREEN_HEIGHT // 2
+        self.speed_x = random.choice([-4, 4])
+        self.speed_y = -4
+
 # --- 遊戲主迴圈 ---
 def game_loop():
     pygame.init()
