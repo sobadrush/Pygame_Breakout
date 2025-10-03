@@ -25,12 +25,12 @@ class Donkey(Animal):
     
 ###########################
     
-class Mule(Animal):
+class Mule(Horse, Donkey):
   def __init__(self):
     super().__init__()
     
-  def speak(self):
-    print("一齁一齁一齁")
+  # def speak(self):
+  #  print("一齁一齁一齁")
   
 ###########################
 
