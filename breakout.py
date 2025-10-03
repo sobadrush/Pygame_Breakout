@@ -1,5 +1,6 @@
 import pygame
 import random
+import os
 
 # --- 常數 ---
 SCREEN_WIDTH = 800
@@ -15,6 +16,9 @@ WHITE = (255, 255, 255)
 # 球設定
 BALL_RADIUS = 10
 
+# --- 圖片資源路徑 ---
+ASSETS_DIR = os.path.join(os.path.dirname(__file__), 'assets')
+
 # --- 輔助函式 ---
 def draw_text(surface, text, size, x, y):
     font = pygame.font.Font(None, size)
@@ -28,8 +32,13 @@ class Paddle(pygame.sprite.Sprite):
     """ 代表玩家控制的球拍 """
     def __init__(self):
         super().__init__()
-        self.image = pygame.Surface([PADDLE_NEW_WIDTH, PADDLE_NEW_HEIGHT])
-        self.image.fill(WHITE)
+        # 載入球拍圖片
+        paddle_img = pygame.image.load(os.path.join(ASSETS_DIR, 'paddle_2.png'))
+        # 從精靈圖中提取單一幀（取中間部分作為球拍）
+        self.image = pygame.Surface([PADDLE_NEW_WIDTH, PADDLE_NEW_HEIGHT], pygame.SRCALPHA)
+        # 縮放圖片以適應球拍尺寸
+        scaled_img = pygame.transform.scale(paddle_img, (PADDLE_NEW_WIDTH, PADDLE_NEW_HEIGHT))
+        self.image.blit(scaled_img, (0, 0))
         self.rect = self.image.get_rect()
         self.rect.x = (SCREEN_WIDTH - self.rect.width) // 2
         self.rect.y = SCREEN_HEIGHT - self.rect.height - 10
@@ -50,10 +59,10 @@ class Ball(pygame.sprite.Sprite):
     """ 代表遊戲中的球 """
     def __init__(self):
         super().__init__()
-        self.image = pygame.Surface([BALL_RADIUS * 2, BALL_RADIUS * 2])
-        self.image.fill(BLACK)
-        self.image.set_colorkey(BLACK)
-        pygame.draw.circle(self.image, WHITE, (BALL_RADIUS, BALL_RADIUS), BALL_RADIUS)
+        # 載入球圖片
+        ball_img = pygame.image.load(os.path.join(ASSETS_DIR, 'ball_blue.png'))
+        # 縮放球圖片至適當大小
+        self.image = pygame.transform.scale(ball_img, (BALL_RADIUS * 2, BALL_RADIUS * 2))
         self.rect = self.image.get_rect()
         self.reset()
     
@@ -79,12 +88,37 @@ class Brick(pygame.sprite.Sprite):
         super().__init__()
         self.color = color
         self.points = points
-        self.image = pygame.Surface([BRICK_NEW_WIDTH, BRICK_NEW_HEIGHT])
-        self.image.fill(self.get_color())
+        self.health = 2
+        
+        # 載入磚塊圖片（從精靈圖中提取第一幀）
+        brick_img_path = os.path.join(ASSETS_DIR, f'brick_{color}.png')
+        brick_cracked_img_path = os.path.join(ASSETS_DIR, f'brick_{color}_cracked.png')
+        
+        # 載入完整圖片
+        full_brick_img = pygame.image.load(brick_img_path)
+        full_brick_cracked_img = pygame.image.load(brick_cracked_img_path)
+        
+        # 精靈圖尺寸為 384x128，包含 3 幀，每幀 128x128
+        frame_width = 128
+        frame_height = 128
+        
+        # 提取第一幀作為完整磚塊
+        brick_frame = pygame.Surface((frame_width, frame_height), pygame.SRCALPHA)
+        brick_frame.blit(full_brick_img, (0, 0), (0, 0, frame_width, frame_height))
+        
+        # 提取第一幀作為破損磚塊
+        brick_cracked_frame = pygame.Surface((frame_width, frame_height), pygame.SRCALPHA)
+        brick_cracked_frame.blit(full_brick_cracked_img, (0, 0), (0, 0, frame_width, frame_height))
+        
+        # 縮放至遊戲中的磚塊尺寸
+        self.normal_image = pygame.transform.scale(brick_frame, (BRICK_NEW_WIDTH, BRICK_NEW_HEIGHT))
+        self.cracked_image = pygame.transform.scale(brick_cracked_frame, (BRICK_NEW_WIDTH, BRICK_NEW_HEIGHT))
+        
+        # 設定初始圖片為完整磚塊
+        self.image = self.normal_image
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.health = 2
     
     def get_color(self):
         colors = {
@@ -105,9 +139,8 @@ class Brick(pygame.sprite.Sprite):
             self.kill()
             return self.points
         else:
-            # 變暗顏色表示受損
-            color = self.get_color()
-            self.image.fill((color[0]//2, color[1]//2, color[2]//2))
+            # 切換到破損磚塊圖片
+            self.image = self.cracked_image
             return 0
 
 # --- 遊戲主迴圈 ---
