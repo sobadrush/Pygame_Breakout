@@ -143,7 +143,18 @@ class Brick(pygame.sprite.Sprite):
     def hit(self):
         """ 處理磚塊被擊中的邏輯，並在銷毀時回傳分數 """
         self.health -= 1
+        
         if self.health <= 0:
+          # --- 挑戰修改：產生道具 ---
+          if (self.all_sprites_group is not None) and (self.powerups_group is not None):
+            if random.randint(1, 10) <= 3: # 30% 機率掉落道具
+              # 建立一個 PowerUp
+              new_powerup = PowerUp(self.rect.centerx, self.rect.centery)
+              # 把它加到主群組和道具群組
+              self.all_sprites_group.add(new_powerup)
+              self.powerups_group.add(new_powerup)
+          # --- 修改結束 ---
+
             self.kill()
             return self.points
         else:
