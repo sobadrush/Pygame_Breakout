@@ -32,13 +32,14 @@ class Paddle(pygame.sprite.Sprite):
     """ 代表玩家控制的球拍 """
     def __init__(self):
         super().__init__()
-        # 載入球拍圖片
-        paddle_img = pygame.image.load(os.path.join(ASSETS_DIR, 'paddle_2.png'))
-        # 從精靈圖中提取單一幀（取中間部分作為球拍）
-        self.image = pygame.Surface([PADDLE_NEW_WIDTH, PADDLE_NEW_HEIGHT], pygame.SRCALPHA)
-        # 縮放圖片以適應球拍尺寸
-        scaled_img = pygame.transform.scale(paddle_img, (PADDLE_NEW_WIDTH, PADDLE_NEW_HEIGHT))
-        self.image.blit(scaled_img, (0, 0))
+        # 載入並縮放 paddle 動畫影格
+        self.animation_frames = [
+            pygame.transform.scale(pygame.image.load("assets/paddle_1.png").convert_alpha(), (PADDLE_NEW_WIDTH, PADDLE_NEW_HEIGHT)),
+            pygame.transform.scale(pygame.image.load("assets/paddle_2.png").convert_alpha(), (PADDLE_NEW_WIDTH, PADDLE_NEW_HEIGHT)),
+            pygame.transform.scale(pygame.image.load("assets/paddle_3.png").convert_alpha(), (PADDLE_NEW_WIDTH, PADDLE_NEW_HEIGHT))
+        ]
+        self.current_frame = 0
+        self.image = self.animation_frames[self.current_frame]
         self.rect = self.image.get_rect()
         self.rect.x = (SCREEN_WIDTH - self.rect.width) // 2
         self.rect.y = SCREEN_HEIGHT - self.rect.height - 10
