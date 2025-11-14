@@ -71,8 +71,13 @@ class Paddle(pygame.sprite.Sprite):
         """ 讓球拍變寬 """
         # 取得目前中心點
         center = self.rect.centerx
-        # 變形 (注意：這裡只是範例，你可能需要重載圖片)
-        self.image = pygame.transform.scale(self.animation_frames[self.current_frame], (int(PADDLE_NEW_WIDTH * 1.5), PADDLE_NEW_HEIGHT))
+        # 縮放所有動畫影格
+        new_width = int(PADDLE_NEW_WIDTH * 1.5)
+        self.animation_frames = [
+            pygame.transform.scale(frame, (new_width, PADDLE_NEW_HEIGHT))
+            for frame in self.animation_frames
+        ]
+        self.image = self.animation_frames[self.current_frame]
         self.rect = self.image.get_rect()
         self.rect.centerx = center
         self.rect.y = SCREEN_HEIGHT - self.rect.height - 10
