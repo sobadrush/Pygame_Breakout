@@ -55,6 +55,19 @@ class Paddle(pygame.sprite.Sprite):
             self.rect.x = 0
         if self.rect.x > SCREEN_WIDTH - self.rect.width:
             self.rect.x = SCREEN_WIDTH - self.rect.width
+    
+    # --- 挑戰修改：新增 widen 方法 ---
+    def widen(self):
+        """ 讓球拍變寬 """
+        # 取得目前中心點
+        center = self.rect.centerx
+        # 變形 (注意：這裡只是範例，你可能需要重載圖片)
+        self.image = pygame.transform.scale(self.animation_frames[self.current_frame], (int(PADDLE_NEW_WIDTH * 1.5), PADDLE_NEW_HEIGHT))
+        self.rect = self.image.get_rect()
+        self.rect.centerx = center
+        self.rect.y = SCREEN_HEIGHT - self.rect.height - 10
+    # --- 修改結束 ---
+
 
 class Ball(pygame.sprite.Sprite):
     """ 代表遊戲中的球 """
