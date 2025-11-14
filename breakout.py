@@ -188,6 +188,8 @@ def game_loop():
         """ 建立磚塊牆並回傳 bricks sprite group """
         bricks.empty()
         all_sprites.empty()
+        powerups.empty() # 把 powerups 群組也清空
+        
         all_sprites.add(paddle)
         all_sprites.add(ball)
         BRICK_COLORS = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple']
@@ -199,6 +201,11 @@ def game_loop():
                     row * (BRICK_NEW_HEIGHT + 5) + 50,
                     color, points
                 )
+                # --- 挑戰修改 ---
+                # 把 groups 傳給 brick 物件
+                brick.all_sprites_group = all_sprites
+                brick.powerups_group = powerups
+                # --- 修改結束 ---
                 all_sprites.add(brick)
                 bricks.add(brick)
     
