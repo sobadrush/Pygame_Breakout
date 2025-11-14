@@ -143,6 +143,25 @@ class Brick(pygame.sprite.Sprite):
             self.image = self.cracked_image
             return 0
 
+
+# 定義道具類別
+class PowerUp(pygame.sprite.Sprite):
+  def __init__(self, center_x, center_y):
+    super().__init__()
+    self.image = pygame.Surface((15, 15)) # 15x15 方塊
+    self.image.fill((255, 255, 0)) # 黃色
+    self.rect = self.image.get_rect()
+    self.rect.centerx = center_x
+    self.rect.centery = center_y
+    self.speed_y = 3
+  
+  def update(self):
+      """ 移動道具並處理邊界 (掉出畫面就刪除) """
+      self.rect.y += self.speed_y
+      if self.rect.top > SCREEN_HEIGHT:
+          self.kill() # 道具掉出畫面，自我銷毀
+
+
 # --- 遊戲主迴圈 ---
 def game_loop():
     pygame.init()
