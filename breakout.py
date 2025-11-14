@@ -43,6 +43,16 @@ class Paddle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = (SCREEN_WIDTH - self.rect.width) // 2
         self.rect.y = SCREEN_HEIGHT - self.rect.height - 10
+        self.last_update = pygame.time.get_ticks()
+        self.frame_rate = 100 # 動畫更新頻率 (毫秒)
+    
+    def update(self):
+        """ 更新 paddle 的動畫 """
+        now = pygame.time.get_ticks()
+        if now - self.last_update > self.frame_rate:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(self.animation_frames)
+            self.image = self.animation_frames[self.current_frame]
     
     def move(self, keys):
         """ 根據按鍵移動球拍 """
