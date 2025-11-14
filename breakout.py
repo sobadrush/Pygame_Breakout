@@ -172,6 +172,7 @@ def game_loop():
     score = 0
     all_sprites = pygame.sprite.Group()
     bricks = pygame.sprite.Group()
+    powerups = pygame.sprite.Group() # 新增 powerups 群組
     paddle = Paddle()
     ball = Ball()
     
