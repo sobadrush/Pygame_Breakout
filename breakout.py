@@ -87,6 +87,14 @@ class Brick(pygame.sprite.Sprite):
     def __init__(self, x, y, color, points):
         super().__init__()
         self.color = color
+
+        # --- 挑戰修改 ---
+        # 讓 Brick 類別儲存它需要用到的 Sprite Groups
+        # (我們等等會修改 create_brick_wall 來傳遞這些參數)
+        self.all_sprites_group = None
+        self.powerups_group = None
+        # --- 修改結束 ---
+        
         self.points = points
         self.health = 2
         
