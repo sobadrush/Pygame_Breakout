@@ -284,6 +284,14 @@ def game_loop():
                 ball.speed_y = -ball.speed_y
                 for brick in brick_hit_list:
                     score += brick.hit()
+                    
+            # --- 挑戰修改：偵測道具碰撞 ---
+            powerup_hit_list = pygame.sprite.spritecollide(paddle, powerups, True) # True = 撞到就刪除
+            for powerup in powerup_hit_list:
+                # 觸發球拍變寬
+                paddle.widen()
+            # --- 修改結束 ---
+            
             # --- 遊戲結束條件 ---
             if ball.rect.top > SCREEN_HEIGHT:
                 game_state = "game_over"
