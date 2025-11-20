@@ -27,8 +27,6 @@ def draw_text(surface, text, size, x, y):
     surface.blit(text_surface, text_rect)
 
 # 定義球拍類別
-
-
 class Paddle(pygame.sprite.Sprite):
     def __init__(self):  # 建構子
         super().__init__()
@@ -72,9 +70,11 @@ class Paddle(pygame.sprite.Sprite):
         if self.rect.left <= 0:
             self.rect.left = 0
 
+    def widen(self):
+        print("球拍變寬了!!!!")
+        pass
+
 # 定義球類別
-
-
 class Ball(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -246,6 +246,9 @@ def game_loop():
                 ball.speed_y = -ball.speed_y
                 for brick in brick_hit_list:
                     score += brick.hit()  # 呼叫磚塊的 hit 方法
+
+            # --- 挑戰修改：偵測道具碰撞 ---
+
 
             # --- 遊戲結束條件 ---
             if ball.rect.top > SCREEN_HEIGHT:
