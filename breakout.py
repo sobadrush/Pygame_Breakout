@@ -248,7 +248,10 @@ def game_loop():
                     score += brick.hit()  # 呼叫磚塊的 hit 方法
 
             # --- 挑戰修改：偵測道具碰撞 ---
-
+            powerup_hit_list = pygame.sprite.spritecollide(paddle, powerups, True) # True = 撞到就刪除
+            for _ in powerup_hit_list:
+                # 觸發球拍變寬
+                paddle.widen()
 
             # --- 遊戲結束條件 ---
             if ball.rect.top > SCREEN_HEIGHT:
