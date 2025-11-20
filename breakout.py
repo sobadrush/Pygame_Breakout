@@ -188,6 +188,10 @@ def game_loop():
                 all_sprites.add(brick) # 將磚塊加入 all_sprites 群組
                 bricks.add(brick) # 將磚塊加入 bricks 群組
 
+                # 把 groups 傳給 brick 物件
+                brick.all_sprites_group = all_sprites
+                brick.powerups_group = powerups
+
     running = True
     while running:
         clock.tick(60)

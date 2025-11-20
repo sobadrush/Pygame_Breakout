@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>霓虹打磚塊 - 互動式思考教學版</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #main-layout {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            width: 100%;
+            height: 90vh;
+        }
+
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            border: 2px solid #333;
+            border-radius: 4px;
+            flex: 0 0 auto;
+            cursor: crosshair;
+        }
+
+        canvas {
+            display: block;
+            background-color: #000;
+        }
+
+        #sidebar {
+            flex: 1;
+            background: #222;
+            border: 1px solid #444;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        #sidebar h2 {
+            color: #0ff;
+            margin-top: 0;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #333;
+            color: #fff;
+            border: 1px solid #0ff;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+            font-size: 16px;
+            flex: 1;
+        }
+
+        button:hover, button.active {
+            background: #0ff;
+            color: #000;
+            box-shadow: 0 0 15px #0ff;
+            transform: translateY(-2px);
+        }
+
+        #info-display {
+            background: #111;
+            padding: 15px;
+            border-radius: 4px;
+            line-height: 1.6;
+            color: #ddd;
+            border-left: 4px solid #0ff;
+            min-height: 200px;
+        }
+        
+        #info-display h3 {
+            color: #ff0;
+            margin-top: 0;
+        }
+
+        /* --- CSS 3D 示意圖樣式 --- */
+        .diagram-container {
+            background: #0a0a0a;
+            border: 1px dashed #333;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            text-align: center;
+            perspective: 800px;
+        }
+        .diagram-title {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .basket-diagram {
+            position: relative;
+            width: 160px;
+            height: 80px;
+            margin: 0 auto 10px auto;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #555;
+            border-top: none;
+            border-radius: 0 0 15px 15px;
+            transform-style: preserve-3d;
+            transform: rotateX(20deg);
+            box-shadow: 0 15px 20px rgba(0,0,0,0.5), inset 0 -10px 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-end;
+            justify-content: center;
+            padding: 10px;
+            gap: 8px;
+            border-bottom: 4px solid #444;
+        }
+        
+        .basket-diagram::before {
+            content: '';
+            position: absolute;
+            top: -30px; left: -2px; right: -2px; height: 30px;
+            border: 2px solid #444;
+            border-bottom: none;
+            background: rgba(255,255,255,0.02);
+            transform: translateZ(-20px);
+            border-radius: 5px 5px 0 0;
+        }
+
+        .d-obj {
+            transform: rotateX(-20deg);
+            box-shadow: 0 5px 5px rgba(0,0,0,0.5);
+            transition: transform 0.3s;
+        }
+        .d-obj:hover {
+            transform: rotateX(-20deg) translateY(-5px);
+        }
+
+        .d-brick {
+            width: 24px; height: 12px; border-radius: 2px;
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        
+        .d-ball { 
+            width: 14px; height: 14px; 
+            background: radial-gradient(circle at 30% 30%, #fff, #888); 
+            border-radius: 50%; 
+        }
+        
+        .d-paddle { 
+            width: 36px; height: 8px; 
+            background: #00aaff; 
+            border: 1px solid #fff;
+            border-radius: 2px; 
+        }
+        
+        .d-item { 
+            width: 14px; height: 14px; 
+            background: #FFD700; 
+            transform: rotateX(-20deg) rotateZ(45deg);
+            border: 1px solid #fff;
+        }
+        .d-item:hover {
+            transform: rotateX(-20deg) rotateZ(45deg) translateY(-5px);
+        }
+
+        /* 屬性檢視器視窗樣式 */
+        #inspector-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 10, 20, 0.95);
+            border: 2px solid #ff00ff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 340px;
+            display: none;
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.3);
+            z-index: 100;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        #inspector-overlay h3 {
+            margin: 0 0 10px 0;
+            color: #ff00ff;
+            border-bottom: 1px solid #555;
+            padding-bottom: 5px;
+        }
+
+        .prop-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .prop-key { color: #66d9ef; }
+        .prop-val { color: #a6e22e; text-align: right; }
+        .prop-comment { color: #75715e; font-style: italic; display: block; margin-top: 5px; margin-bottom: 2px; font-size: 12px; border-top: 1px solid #333; padding-top: 2px;}
+
+        .value-box {
+            display: inline-block;
+            width: 60px;
+            height: 20px;
+            border: 1px solid #75715e;
+            background: #272822;
+            vertical-align: middle;
+            border-radius: 2px;
+        }
+
+        /* 新增：互動式問答按鈕樣式 */
+        .question-btn {
+            display: block;
+            margin: 10px auto;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #00aaff;
+            border: 2px solid #fff;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0;
+            line-height: 26px;
+            text-align: center;
+            box-shadow: 0 0 10px #00aaff;
+            transition: all 0.2s;
+        }
+        .question-btn:hover {
+            transform: scale(1.1);
+            background: #fff;
+            color: #00aaff;
+        }
+
+        .question-text {
+            display: block;
+            margin: 5px 0;
+            padding: 8px;
+            background: rgba(0, 170, 255, 0.1);
+            border: 1px solid #00aaff;
+            color: #0ff;
+            font-size: 13px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .question-text:hover {
+            background: rgba(0, 170, 255, 0.3);
+            box-shadow: 0 0 5px #00aaff;
+        }
+
+        .close-btn {
+            background: #ff0055;
+            border: none;
+            color: white;
+            width: 100%;
+            padding: 5px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            pointer-events: none;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+            z-index: 10;
+        }
+
+        .status-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+        
+        #pause-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 1px solid #0ff;
+            color: #fff;
+            pointer-events: none;
+            display: none;
+            z-index: 20;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="main-layout">
+        <!-- 左側：遊戲區 -->
+        <div id="game-container">
+            <canvas id="gameCanvas"></canvas>
+            <div id="ui-layer">
+                分數: <span id="score">0</span> | 
+                連擊: <span id="combo">0</span>
+            </div>
+            <div class="status-tag" id="status-text">AUTO DEMO MODE</div>
+            
+            <div id="inspector-overlay">
+                <h3>Instance: Brick</h3>
+                <div id="inspector-content"></div>
+                <button class="close-btn" onclick="closeInspector()">Close / Resume</button>
+            </div>
+
+            <div id="pause-overlay">
+                <h3>教學模式：已暫停</h3>
+                <p>點擊空白處繼續，或點擊磚塊檢視屬性</p>
+            </div>
+        </div>
+
+        <!-- 右側：教學說明區 -->
+        <div id="sidebar">
+            <h2>遊戲程式教學</h2>
+            <p>點擊磚塊可查看其 Python Class 屬性，或使用下方按鈕：</p>
+            
+            <div class="btn-group">
+                <button onclick="showInfo('sprites')" id="btn-sprites">All Sprites</button>
+                <button onclick="showInfo('bricks')" id="btn-bricks">Bricks</button>
+                <button onclick="showInfo('powerups')" id="btn-powerups">Powerups</button>
+            </div>
+
+            <div id="info-display">
+                <h3>歡迎使用打磚塊教學演示</h3>
+                <p>左側視窗展示了一個自動運行的打磚塊遊戲 (Breakout)。</p>
+                <p><strong>互動功能更新：</strong></p>
+                <ul>
+                    <li><strong>互動式思考：</strong> 磚塊屬性視窗中的 Groups 區域現在被隱藏，請透過點擊問號按鈕來探索答案。</li>
+                    <li><strong>3D 容器圖示：</strong> 右側說明欄顯示 Groups 的立體結構。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = 480;
+    canvas.height = 600;
+
+    // 遊戲狀態
+    let score = 0;
+    let combo = 0;
+    let paddleWidth = 100;
+    const paddleHeight = 15;
+    const ballRadius = 8;
+    let paddleX = (canvas.width - paddleWidth) / 2;
+    
+    let isPaused = false;
+    let highlightTarget = null;
+    let isInspecting = false;
+
+    let bricks = [];
+    let items = [];
+    let particles = [];
+    
+    let ball = {
+        x: canvas.width / 2,
+        y: canvas.height - 100,
+        dx: 0,
+        dy: 0,
+        speed: 7,
+        active: true
+    };
+
+    const brickRowCount = 6;
+    const brickColumnCount = 6;
+    const brickPadding = 10;
+    const brickOffsetTop = 60;
+    const brickOffsetLeft = 35;
+    const brickWidth = (canvas.width - (brickOffsetLeft * 2) - (brickPadding * (brickColumnCount - 1))) / brickColumnCount;
+    const brickHeight = 20;
+
+    const colors = ['#FF0055', '#FF5500', '#FFAA00', '#FFFF00', '#00FF00', '#00FFFF'];
+    const colorNames = ['Red', 'Orange', 'Gold', 'Yellow', 'Green', 'Cyan'];
+
+    // --- 教學內容資料 ---
+    const infoData = {
+        sprites: `
+            <h3>角色物件 (Sprites)</h3>
+            <p>高亮顯示：<strong>所有繼承自 Sprite 的物件</strong>。</p>
+            <p><code>all_sprites_group</code> 就像一個大容器，裡面混合了所有遊戲中的動態物件。</p>
+            
+            <div class="diagram-container">
+                <span class="diagram-title">Visualizing: all_sprites_group (Container)</span>
+                <div class="basket-diagram">
+                    <div class="d-obj d-ball"></div>
+                    <div class="d-obj d-paddle"></div>
+                    <div class="d-obj d-brick" style="background:red;"></div>
+                    <div class="d-obj d-item"></div>
+                    <div class="d-obj d-brick" style="background:green;"></div>
+                    <div class="d-obj d-ball" style="transform: scale(0.8) rotateX(-20deg);"></div>
+                </div>
+                <small>Contains instances of ALL types</small>
+            </div>
+        `,
+        bricks: `
+            <h3>磚塊系統 (Bricks)</h3>
+            <p>高亮顯示：<strong>所有 Brick 實體</strong>。</p>
+            <p><code>bricks_group</code> 專門用來管理所有尚未被擊破的磚塊，方便進行統一的碰撞檢測。</p>
+            
+            <div class="diagram-container">
+                <span class="diagram-title">Visualizing: bricks_group (Container)</span>
+                <div class="basket-diagram">
+                    <div class="d-obj d-brick" style="background:#FF0055"></div>
+                    <div class="d-obj d-brick" style="background:#FF5500"></div>
+                    <div class="d-obj d-brick" style="background:#FFAA00"></div>
+                    <div class="d-obj d-brick" style="background:#FFFF00"></div>
+                    <div class="d-obj d-brick" style="background:#00FF00"></div>
+                    <div class="d-obj d-brick" style="background:#00FFFF"></div>
+                    <div class="d-obj d-brick" style="background:#FF0055"></div>
+                    <div class="d-obj d-brick" style="background:#FFAA00"></div>
+                </div>
+                <small>Contains multiple Brick instances</small>
+            </div>
+        `,
+        powerups: `
+            <h3>道具機制 (Powerups)</h3>
+            <p>高亮顯示：<strong>所有 PowerUp 實體</strong>。</p>
+            <p>當道具生成時，會被加入到 <code>powerups_group</code> 容器中進行更新與繪製。</p>
+            
+            <div class="diagram-container">
+                <span class="diagram-title">Visualizing: powerups_group (Container)</span>
+                <div class="basket-diagram" style="padding-bottom: 15px; gap: 12px;">
+                    <div class="d-obj d-item"></div>
+                    <div class="d-obj d-item" style="background:#00FFFF"></div>
+                    <div class="d-obj d-item"></div>
+                    <div class="d-obj d-item" style="background:#00FFFF"></div>
+                    <div class="d-obj d-item"></div>
+                </div>
+                <small>Contains active PowerUp instances</small>
+            </div>
+        `
+    };
+
+    canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        let clickedBrick = null;
+
+        for(let b of bricks) {
+            if(b.status === 1) {
+                if (mouseX > b.x && mouseX < b.x + brickWidth && 
+                    mouseY > b.y && mouseY < b.y + brickHeight) {
+                    clickedBrick = b;
+                    break;
+                }
+            }
+        }
+
+        if (clickedBrick) {
+            openInspector(clickedBrick);
+        } else {
+            if (isInspecting) {
+                closeInspector();
+            } else {
+                togglePause();
+            }
+        }
+    });
+
+    function openInspector(brick) {
+        isPaused = true;
+        isInspecting = true;
+        highlightTarget = 'bricks';
+        
+        const overlay = document.getElementById('inspector-overlay');
+        const content = document.getElementById('inspector-content');
+        
+        // 修改：Groups 區域預設顯示互動容器與問號按鈕
+        content.innerHTML = `
+            <div class="prop-row"><span class="prop-key">self.rect.x</span> <span class="prop-val">${Math.floor(brick.x)}</span></div>
+            <div class="prop-row"><span class="prop-key">self.rect.y</span> <span class="prop-val">${Math.floor(brick.y)}</span></div>
+            <div class="prop-row"><span class="prop-key">self.color</span> <span class="prop-val">"${brick.colorName}"</span></div>
+            <div class="prop-row"><span class="prop-key">self.points</span> <span class="prop-val">${brick.points}</span></div>
+            <div class="prop-row"><span class="prop-key">self.health</span> <span class="prop-val">${brick.health}</span></div>
+            <div class="prop-row"><span class="prop-key">self.image</span> <span class="prop-val">"assets 中的圖片"</span></div>
+            
+            <div class="prop-comment"># Groups</div>
+            <div id="groups-interactive-area">
+                <button class="question-btn" onclick="revealQuestion()">?</button>
+            </div>
+        `;
+        
+        overlay.style.display = 'block';
+        updateUIStatus();
+    }
+
+    // 新增：第一階段，顯示問題
+    function revealQuestion() {
+        const area = document.getElementById('groups-interactive-area');
+        area.innerHTML = `<div class="question-text" onclick="revealGroups()">磚塊擊碎後，掉落的道具要被管理嗎？</div>`;
+    }
+
+    // 新增：第二階段，顯示原始 Groups 資訊
+    function revealGroups() {
+        const area = document.getElementById('groups-interactive-area');
+        area.innerHTML = `
+            <div class="prop-row">
+                <span class="prop-key">self.all_sprites_group</span> 
+                <span class="prop-val"><div class="value-box"></div></span>
+            </div>
+            <div class="prop-row">
+                <span class="prop-key">self.powerups_group</span> 
+                <span class="prop-val"><div class="value-box"></div></span>
+            </div>
+        `;
+    }
+
+    function closeInspector() {
+        isInspecting = false;
+        document.getElementById('inspector-overlay').style.display = 'none';
+        isPaused = false;
+        highlightTarget = null;
+        updateUIStatus();
+    }
+
+    function togglePause() {
+        if (isInspecting) return;
+        
+        isPaused = !isPaused;
+        highlightTarget = isPaused ? null : null;
+        if(!isPaused) {
+            document.querySelectorAll('.btn-group button').forEach(btn => btn.classList.remove('active'));
+        }
+        updateUIStatus();
+    }
+
+    function showInfo(key) {
+        if (isInspecting) closeInspector();
+
+        document.getElementById('info-display').innerHTML = infoData[key];
+        document.querySelectorAll('.btn-group button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('btn-' + key).classList.add('active');
+
+        isPaused = true;
+        highlightTarget = key;
+        
+        if (key === 'powerups' && items.length === 0) {
+            spawnItem(canvas.width / 2, canvas.height / 2);
+        }
+        
+        updateUIStatus();
+    }
+
+    function updateUIStatus() {
+        const statusText = document.getElementById('status-text');
+        const pauseOverlay = document.getElementById('pause-overlay');
+        
+        if (isPaused) {
+            let statusLabel = isInspecting ? "INSPECTOR MODE" : (highlightTarget ? "PAUSED: " + highlightTarget.toUpperCase() : "PAUSED");
+            statusText.innerText = statusLabel;
+            statusText.style.borderColor = "#ff0";
+            statusText.style.color = "#ff0";
+            statusText.style.background = "rgba(255, 255, 0, 0.1)";
+            
+            if (!isInspecting) {
+                pauseOverlay.style.display = 'block';
+            } else {
+                pauseOverlay.style.display = 'none';
+            }
+        } else {
+            statusText.innerText = "AUTO DEMO MODE";
+            statusText.style.borderColor = "#0f0";
+            statusText.style.color = "#0f0";
+            statusText.style.background = "rgba(0, 255, 0, 0.2)";
+            pauseOverlay.style.display = 'none';
+        }
+    }
+
+    function getVisualState(category) {
+        const isTarget = highlightTarget === category || highlightTarget === 'sprites';
+        const alpha = (!isPaused || isTarget) ? 1.0 : 0.1;
+        return { alpha, isTarget: isPaused && isTarget };
+    }
+
+    function getPulse() {
+        return (Math.sin(Date.now() / 150) + 1) / 2 * 15 + 5;
+    }
+
+    function initBricks() {
+        bricks = [];
+        for(let c = 0; c < brickColumnCount; c++) {
+            for(let r = 0; r < brickRowCount; r++) {
+                bricks.push({
+                    x: (c * (brickWidth + brickPadding)) + brickOffsetLeft,
+                    y: (r * (brickHeight + brickPadding)) + brickOffsetTop,
+                    status: 1,
+                    color: colors[r % colors.length],
+                    hexColor: colors[r % colors.length],
+                    colorName: colorNames[r % colorNames.length],
+                    points: (brickRowCount - r) * 10, 
+                    health: 2 
+                });
+            }
+        }
+    }
+
+    function createExplosion(x, y, color) {
+        for(let i = 0; i < 10; i++) {
+            particles.push({
+                x: x,
+                y: y,
+                dx: (Math.random() - 0.5) * 5,
+                dy: (Math.random() - 0.5) * 5,
+                life: 1.0,
+                color: color
+            });
+        }
+    }
+
+    function spawnItem(x, y) {
+        const type = Math.random() < 0.7 ? 0 : 1; 
+        items.push({
+            x: x,
+            y: y,
+            width: 15,
+            height: 15,
+            dy: 3,
+            type: type,
+            active: true
+        });
+    }
+
+    function spawnRandomItem(x, y) {
+         if (Math.random() < 0.1) spawnItem(x, y);
+    }
+
+    function applyItemEffect(type) {
+        if (type === 0) {
+            score += 500;
+            createUiText(paddleX + paddleWidth/2, canvas.height - 50, "+500", "#FFD700");
+        } else if (type === 1) {
+            paddleWidth = Math.min(paddleWidth + 20, canvas.width - 20);
+            createUiText(paddleX + paddleWidth/2, canvas.height - 50, "寬度增加!", "#00FFFF");
+            setTimeout(() => {
+                paddleWidth = Math.max(100, paddleWidth - 20);
+            }, 5000);
+        }
+    }
+
+    let uiTexts = [];
+    function createUiText(x, y, text, color) {
+        uiTexts.push({x, y, text, color, life: 1.0});
+    }
+
+    function launchBallAtTarget() {
+        const activeBricks = bricks.filter(b => b.status === 1);
+        if (activeBricks.length === 0) {
+            initBricks();
+            launchBallAtTarget();
+            return;
+        }
+
+        ball.x = paddleX + paddleWidth / 2;
+        ball.y = canvas.height - 40;
+        ball.active = true;
+
+        const targetBrick = activeBricks[Math.floor(Math.random() * activeBricks.length)];
+        const targetX = targetBrick.x + brickWidth / 2;
+        const targetY = targetBrick.y + brickHeight / 2;
+
+        const angle = Math.atan2(targetY - ball.y, targetX - ball.x);
+        ball.dx = Math.cos(angle) * ball.speed;
+        ball.dy = Math.sin(angle) * ball.speed;
+    }
+
+    function updateScoreUI() {
+        document.getElementById('score').innerText = score;
+        document.getElementById('combo').innerText = combo;
+    }
+
+    function autoPlayLogic() {
+        let targetX = ball.x - paddleWidth / 2;
+        if (targetX < 0) targetX = 0;
+        if (targetX > canvas.width - paddleWidth) targetX = canvas.width - paddleWidth;
+        paddleX += (targetX - paddleX) * 0.15;
+    }
+
+    function drawBall() {
+        if (!ball.active) return;
+        const state = getVisualState('sprites');
+        
+        ctx.globalAlpha = state.alpha;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ballRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.fill();
+        
+        if (state.isTarget) {
+            const pulse = getPulse();
+            ctx.shadowBlur = pulse;
+            ctx.shadowColor = "#fff";
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        } else {
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#fff";
+        }
+        
+        ctx.closePath();
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1.0;
+    }
+
+    function drawPaddle() {
+        const state = getVisualState('sprites');
+        
+        ctx.globalAlpha = state.alpha;
+        ctx.beginPath();
+        ctx.rect(paddleX, canvas.height - paddleHeight - 10, paddleWidth, paddleHeight);
+        ctx.fillStyle = "#00aaff";
+        ctx.fill();
+        
+        if (state.isTarget) {
+            const pulse = getPulse();
+            ctx.shadowBlur = pulse;
+            ctx.shadowColor = "#00aaff";
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        } else {
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#00aaff";
+        }
+
+        ctx.closePath();
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1.0;
+    }
+
+    function drawBricks() {
+        const state = getVisualState('bricks');
+        
+        bricks.forEach(b => {
+            if(b.status === 1) {
+                ctx.globalAlpha = state.alpha;
+                
+                ctx.beginPath();
+                ctx.rect(b.x, b.y, brickWidth, brickHeight);
+                ctx.fillStyle = b.color;
+                ctx.fill();
+                
+                if (b.health === 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(b.x + 5, b.y + 5);
+                    ctx.lineTo(b.x + brickWidth/2, b.y + brickHeight - 5);
+                    ctx.lineTo(b.x + brickWidth - 5, b.y + 5);
+                    ctx.strokeStyle = "rgba(0,0,0,0.5)";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                if (state.isTarget) {
+                    const pulse = getPulse();
+                    ctx.strokeStyle = "#ffffff"; 
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(b.x, b.y, brickWidth, brickHeight);
+                    if (Math.random() < 0.1) {
+                         ctx.shadowBlur = pulse;
+                         ctx.shadowColor = b.color;
+                    }
+                } else {
+                     ctx.shadowBlur = 5;
+                     ctx.shadowColor = b.color;
+                }
+                
+                ctx.closePath();
+                ctx.shadowBlur = 0;
+            }
+        });
+        ctx.globalAlpha = 1.0;
+    }
+
+    function drawItems() {
+        const state = getVisualState('powerups');
+        
+        items.forEach(item => {
+            if(item.active) {
+                ctx.globalAlpha = state.alpha;
+                ctx.beginPath();
+                ctx.rect(item.x - item.width/2, item.y - item.height/2, item.width, item.height);
+                ctx.fillStyle = item.type === 0 ? "#FFD700" : "#00FFFF"; 
+                ctx.fill();
+                
+                if (state.isTarget) {
+                    const pulse = getPulse();
+                    ctx.shadowBlur = pulse;
+                    ctx.shadowColor = item.type === 0 ? "#FFD700" : "#00FFFF";
+                    ctx.strokeStyle = "#fff";
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+                
+                ctx.font = "12px Arial";
+                ctx.fillStyle = "black";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(item.type === 0 ? "$" : "W", item.x, item.y);
+                ctx.closePath();
+                ctx.shadowBlur = 0;
+            }
+        });
+        ctx.globalAlpha = 1.0;
+    }
+
+    function drawParticles() {
+        ctx.globalAlpha = isPaused ? 0.1 : 1.0;
+        particles.forEach((p, index) => {
+            if (!isPaused) {
+                p.life -= 0.02;
+                p.x += p.dx;
+                p.y += p.dy;
+            }
+            
+            if (p.life > 0) {
+                ctx.globalAlpha = isPaused ? 0.1 : p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+                ctx.fill();
+            }
+        });
+        
+        if (!isPaused) {
+            particles = particles.filter(p => p.life > 0);
+        }
+        ctx.globalAlpha = 1.0;
+    }
+
+    function drawUiText() {
+        ctx.globalAlpha = isPaused ? 0.1 : 1.0;
+        uiTexts.forEach((t, index) => {
+            if (!isPaused) {
+                t.y -= 1;
+                t.life -= 0.02;
+            }
+            
+            if (t.life > 0) {
+                ctx.globalAlpha = isPaused ? 0.1 : t.life;
+                ctx.font = "bold 20px Arial";
+                ctx.fillStyle = t.color;
+                ctx.fillText(t.text, t.x, t.y);
+            }
+        });
+
+        if (!isPaused) {
+            uiTexts = uiTexts.filter(t => t.life > 0);
+        }
+        ctx.globalAlpha = 1.0;
+    }
+
+    function collisionDetection() {
+        let hitBrick = false;
+        bricks.forEach(b => {
+            if(b.status === 1) {
+                if(ball.x > b.x && ball.x < b.x + brickWidth && ball.y > b.y && ball.y < b.y + brickHeight) {
+                    ball.dy = -ball.dy;
+                    b.health -= 1;
+                    if (b.health <= 0) {
+                        b.status = 0;
+                        score += b.points;
+                        combo++;
+                        createExplosion(b.x + brickWidth/2, b.y + brickHeight/2, b.color);
+                        spawnRandomItem(b.x + brickWidth/2, b.y + brickHeight/2);
+                    } else {
+                        combo = 0;
+                    }
+                    hitBrick = true;
+                }
+            }
+        });
+
+        items.forEach(item => {
+            if (!item.active) return;
+            item.y += item.dy;
+            if (item.y + item.height/2 >= canvas.height - paddleHeight - 10 && 
+                item.y - item.height/2 <= canvas.height - 10) {
+                if (item.x >= paddleX && item.x <= paddleX + paddleWidth) {
+                    item.active = false;
+                    applyItemEffect(item.type);
+                }
+            }
+            if (item.y > canvas.height) item.active = false;
+        });
+    }
+
+    function update() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        drawBricks();
+        drawBall();
+        drawPaddle();
+        drawItems();
+        drawParticles();
+        drawUiText();
+
+        if (isPaused) {
+            requestAnimationFrame(update);
+            return;
+        }
+
+        collisionDetection();
+        autoPlayLogic();
+
+        ball.x += ball.dx;
+        ball.y += ball.dy;
+
+        if(ball.x + ball.dx > canvas.width - ballRadius || ball.x + ball.dx < ballRadius) {
+            ball.dx = -ball.dx;
+        }
+        if(ball.y + ball.dy < ballRadius) {
+            ball.dy = -ball.dy;
+        }
+        
+        if(ball.y + ball.dy > canvas.height - ballRadius) {
+            combo = 0;
+            updateScoreUI();
+            launchBallAtTarget();
+        }
+
+        if(ball.y + ball.dy >= canvas.height - paddleHeight - 10 - ballRadius) {
+            if(ball.x > paddleX && ball.x < paddleX + paddleWidth) {
+                let hitPoint = ball.x - (paddleX + paddleWidth / 2);
+                hitPoint = hitPoint / (paddleWidth / 2);
+                let currentSpeed = Math.sqrt(ball.dx*ball.dx + ball.dy*ball.dy);
+                currentSpeed = Math.min(currentSpeed + 0.2, 12);
+                let angle = hitPoint * (Math.PI / 3);
+                ball.dx = currentSpeed * Math.sin(angle);
+                ball.dy = -currentSpeed * Math.cos(angle);
+            }
+        }
+
+        updateScoreUI();
+        requestAnimationFrame(update);
+    }
+
+    initBricks();
+    launchBallAtTarget();
+    update();
+
+</script>
+</body>
+</html>
