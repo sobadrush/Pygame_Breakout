@@ -121,12 +121,16 @@ class Brick(pygame.sprite.Sprite):
         self.all_sprites_group = None
         self.powerups_group = None
 
+        self.all_sprites_group = None  # 每個 brick 物件，用來儲存所有 sprite 的群組
+        self.powerups_group = None  # 每個 brick 物件，用來儲存所有道具的群組
+
     def hit(self):
         self.health -= 1
         if self.health <= 0:
-            new_powerup = PowerUp(self.rect.centerx, self.rect.centery)
-            self.all_sprites_group.add(new_powerup)
-            self.powerups_group.add(new_powerup)
+            if random.randint(0, 100) < 10:  # 10% 的機率生成道具
+                new_powerup = PowerUp(self.rect.centerx, self.rect.centery)
+                self.all_sprites_group.add(new_powerup)  # 將道具加入所有 sprite 群組
+                self.powerups_group.add(new_powerup)  # 將道具加入所有道具群組
             self.kill()
             return self.points
         else:
