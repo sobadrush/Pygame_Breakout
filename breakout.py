@@ -171,6 +171,7 @@ def game_loop():
         all_sprites.empty()
         all_sprites.add(paddle)
         all_sprites.add(ball)
+        powerups.empty() # 清空道具群組
 
         # 建立磚塊牆
         BRICK_COLORS = ["red", "orange", "yellow",
@@ -184,8 +185,8 @@ def game_loop():
                     color,
                     points
                 )
-                all_sprites.add(brick)
-                bricks.add(brick)
+                all_sprites.add(brick) # 將磚塊加入 all_sprites 群組
+                bricks.add(brick) # 將磚塊加入 bricks 群組
 
     running = True
     while running:
