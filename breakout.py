@@ -13,6 +13,8 @@ BRICK_NEW_HEIGHT = 25
 
 # 顏色
 BLACK = (0, 0, 0)
+YELLOW = (255, 255, 0)
+RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 
 # 球設定
@@ -139,8 +141,8 @@ class Brick(pygame.sprite.Sprite):
     def hit(self):
         self.health -= 1
         if self.health <= 0:
-            if random.randint(0, 100) < 10:  # 10% 的機率生成道具
-                new_powerup = PowerUp(self.rect.centerx, self.rect.centery)
+            if random.randint(0, 100) < 100:  # 10% 的機率生成道具
+                new_powerup = PowerUp(self.rect.centerx, self.rect.centery, random.choice([YELLOW, RED]))
                 self.all_sprites_group.add(new_powerup)  # 將道具加入所有 sprite 群組
                 self.powerups_group.add(new_powerup)  # 將道具加入所有道具群組
             self.kill()
@@ -151,10 +153,11 @@ class Brick(pygame.sprite.Sprite):
 
 
 class PowerUp(pygame.sprite.Sprite):
-    def __init__(self, center_x, center_y):
+    def __init__(self, center_x, center_y, color):
         super().__init__()
+        self.color = color # 儲存顏色
         self.image = pygame.Surface((15, 15))
-        self.image.fill((255, 255, 0))
+        self.image.fill(self.color)
         self.rect = self.image.get_rect()
         self.rect.centerx = center_x
         self.rect.centery = center_y
@@ -260,10 +263,13 @@ def game_loop():
                     score += brick.hit()  # 呼叫磚塊的 hit 方法
 
             # --- 挑戰修改：偵測道具碰撞 ---
-            powerup_hit_list = pygame.sprite.spritecollide(paddle, powerups, True) # True = 撞到就刪除
+            powerup_hit_list = pygame.sprite.spritecollide(paddle, powerups, False) # True = 撞到就刪除
             for _ in powerup_hit_list:
-                # 觸發球拍變寬
-                paddle.widen()
+                if _.color == YELLOW:
+                    paddle.widen()
+                elif _.color == RED:
+                    ball.speed_y *= 0.5
+                _.kill() # 撞到道具就刪除
 
             # --- 遊戲結束條件 ---
             if ball.rect.top > SCREEN_HEIGHT:
