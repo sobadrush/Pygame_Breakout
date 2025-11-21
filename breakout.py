@@ -118,6 +118,8 @@ class Brick(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.health = 2
+        self.all_sprites_group = None
+        self.powerups_group = None
 
     def hit(self):
         self.health -= 1
